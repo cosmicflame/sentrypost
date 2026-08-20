@@ -1,9 +1,29 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# update-docker-compose.sh
+# sentrypost.sh
 # Updates every running Docker‑Compose cluster on the host.
 # ------------------------------------------------------------------
 set -euo pipefail
+
+# ---------- Command‑line options ----------
+check_mode=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --check)
+      check_mode=true
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [--check]"
+      echo "  --check    Show what would be updated, but do not pull or restart"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
 
 # ---------- Discover clusters ----------
 IFS=$'\n'
@@ -22,6 +42,10 @@ if [[ ${#DIRS[@]} -eq 0 ]]; then
   exit 0
 fi
 
+# ---------- Log discovered clusters ----------
+echo "Found ${#DIRS[@]} Docker Compose clusters:"
+for d in "${DIRS[@]}"; do echo "  • $d"; done
+
 # ---------- Process each cluster ----------
 for dir in "${DIRS[@]}"; do
   echo "=================================================="
@@ -33,6 +57,19 @@ for dir in "${DIRS[@]}"; do
   fi
 
   pushd "$dir" >/dev/null || continue
+
+  # Check for SENTRYPOST=SKIP in the compose file
+  if grep -q '^SENTRYPOST=SKIP$' docker-compose.yaml; then
+    echo "  Skipping this cluster because SENTRYPOST=SKIP is present in docker-compose.yaml."
+    popd >/dev/null
+    continue
+  fi
+
+  if $check_mode; then
+    echo "  [CHECK] Would pull and update this cluster (SENTRYPOST=SKIP not found)."
+    popd >/dev/null
+    continue
+  fi
 
   echo "• Pulling latest images..."
 

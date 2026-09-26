@@ -26,4 +26,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run check mode
-        run: ./sentrypost/sentrypost.sh --check
+        run: ./sentrypost.sh --check

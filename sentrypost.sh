@@ -88,7 +88,7 @@ for dir in "${DIRS[@]}"; do
   done
 
   # Pull with timeout; progress bar goes directly to terminal
-  if ! timeout 5m docker compose pull; then
+  if ! timeout 20m docker compose pull; then
     echo "  Pull did not complete before timeout – aborting."
     popd >/dev/null
     exit 1

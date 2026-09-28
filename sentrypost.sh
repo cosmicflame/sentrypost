@@ -89,7 +89,7 @@ for dir in "${DIRS[@]}"; do
 
   # Pull with timeout; progress bar goes directly to terminal
   if ! timeout 5m docker compose pull; then
-    echo "  Pull failed – aborting."
+    echo "  Pull did not complete before timeout – aborting."
     popd >/dev/null
     exit 1
   fi
